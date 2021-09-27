@@ -1,4 +1,4 @@
-package com.yy.ds.springkafka;
+package com.yy.ds.kafka;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
