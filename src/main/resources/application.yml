@@ -4,41 +4,44 @@ spring:
     bootstrap-servers: 10.91.3.119:9092 # Kafka实例的连接地址,集群多个地址用逗号隔开
     # 生产者配置
     producer:
-      acks: 1 # # 应答级别:多少个分区副本备份完成时向生产者发送ack确认(可选0、1、all/-1)，ack确认机制设置为1，leader已经接收了数据的确认信息，replica异步拉取消息，比较折中
+      acks: 1 # 应答级别:多少个分区副本备份完成时向生产者发送ack确认(可选0、1、all/-1)，ack确认机制设置为1，leader已经接收了数据的确认信息，replica异步拉取消息，比较折中
       retries: 3 # 重试次数
       batch-size: 16384 # 批量大小
     #   properties:
     #     linger:
     #       ms: 0 # 提交延时
+    # 当生产端积累的消息达到batch-size或接收到消息linger.ms后,生产者就会将消息提交给kafka
+    # linger.ms为0表示每接收到一条消息就提交给kafka,这时候batch-size其实就没用了
+
       buffer-memory: 33554432 # 生产端缓冲区大小
       # Kafka提供的序列化和反序列化类
       key-serializer: org.apache.kafka.common.serialization.StringSerializer 
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     # 消费者配置
     consumer:
-      group-id: zfprocessor_group # 默认的groupId
+      group-id: spring_kafka_group # 默认的groupId
       enable-auto-commit: false # 不自动提交
     #   auto-commit-interval: 1000 # 自动提交offset延时(接收到消息后多久提交offset)
 
-      # 当kafka中没有初始offset或offset超出范围时将自动重置offset
-      # earliest:重置为分区中最小的offset(最早未被消费的offset);
-      # latest:重置为分区中最新的offset(消费分区中新产生的数据);
-      # none:只要有一个分区不存在已提交的offset,就抛出异常;
+      # 当kafka中没有初始offset或offset超出范围时将自动重置offset，默认值为latest
+        # earliest:重置为分区中最小的offset(最早未被消费的offset);
+        # latest:重置为分区中最新的offset(消费分区中新产生的数据);
+        # none:只要有一个分区不存在已提交的offset,就抛出异常;
       auto-offset-reset: earliest # 最早未被消费的offset
       # Kafka提供的序列化和反序列化类
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       max-poll-records: 500 # 批量一次最大拉取数据量 
       properties:
         session: # 消费会话超时时间(超过这个时间consumer没有发送心跳,就会触发rebalance操作:消费者组内的消费者成员消费的主题分区会发生重新分配)
-          timeout.ms: 120000
+          timeout.ms: 120000 # 默认10000
         request: # 消费请求超时时间
-          timeout.ms: 180000
-      fetch-min-size: 10
-      fetch-max-wait: 10000ms
+          timeout.ms: 180000 # 默认30000
+    #   fetch-min-size: 10 # 服务器应以字节为单位返回获取请求的最小数据量，默认值为1
+    #   fetch-max-wait: 10000 #如果没有足够的数据立即满足“fetch.min.bytes”给出的要求，服务器在回答获取请求之前将阻塞的最长时间（以毫秒为单位）默认值为500
     # consumer-extra:
-    #        # 是否批量处理
-    #        batch-listener: true
+      # 是否批量处理
+    #   batch-listener: true
     # 监听配置
     listener:
       missing-topics-fatal: false # 消费端监听的topic不存在时，项目启动会报错(关掉)

@@ -13,15 +13,47 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class KafkaConsumer {
 
-    @KafkaListener(topics = "test", groupId = "test")
+    /**
+     * 处理单个消息（修改配置）
+     * 
+     * id属性主要在日志线程上体现
+     * groupId：消费组ID，会将配置文件配置的覆盖
+     * topics：监听的topic，可监听多个；
+     * topicPartitions：可配置更加详细的监听信息，可指定topic、parition、offset监听
+     * 监听test的0号分区，同时监听test2的0号分区和test2的1号分区里面offset从8开始的消息
+     * @param record
+     */
+    // @KafkaListener(id = "test-thread", groupId = "felix-group", topicPartitions = {
+    //         @TopicPartition(topic = "test", partitions = { "0" }),
+    //         @TopicPartition(topic = "test2", partitions = "0", partitionOffsets = @PartitionOffset(partition = "1", initialOffset = "8")) })
+    public void onMessage(ConsumerRecord<?, ?> record) {
+        log.debug("topic:{}，partition:{}，offset：{}，value：{}", record.topic(), record.partition(), record.offset(),
+                record.value());
+    }
+
+    /**
+     * 监听处理批量消息（修改配置）
+     * 1、如果这里监听多个topic，那么就不能用ack手动提交，否则会有问题
+     *  - kafka消费数据是非线程安全的，因此ack手动提交时，也不能用异步多线程去提交（会报错）
+     *  - 如果监听多个topic，手动提交offset，可能会造成线程安全问题，如其中一个topic的数据还没有真实消费，但已经被手动提交offset了，那么就会造成数据丢失
+     * @param consumerRecords
+     * @param ack
+     */
+    @KafkaListener(topics = {"test"})
     public void flowDnsConsumer(List<ConsumerRecord> consumerRecords, Acknowledgment ack) {
         System.out.println("当前线程名称：" + Thread.currentThread().getName());
-        Long startTime = System.currentTimeMillis();
+        // 是否提交offset，测试使用
+        Boolean flag = true;
         for (ConsumerRecord record : consumerRecords) {
-            log.debug("拉取到的消息：", record.value());
+            log.debug("topic:{},监听到消息,partition:{},offset:{},value:{}", record.topic(), record.partition(), record.offset(), record.value());
+            // 如果有99的数据则不提交offset，下次服务重新启动后能重新获取到99的数据（注意这里是批量消费）
+            if ("99".equals(record.value().toString())) {
+                flag = false;
+            }
         }
         // 手动提交
-        // ack.acknowledge();
-        log.debug("处理一批次kafka数据时间：{}", System.currentTimeMillis() - startTime);
+        if (flag) {
+            ack.acknowledge();
+        }
     }
 }
