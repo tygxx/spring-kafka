@@ -6,6 +6,11 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+/*
+ *@Description: 发送消息到kafka，第一条消息会到某个partition的下，offset为0，该partition再来消息时，offset+1递增
+ *@ClassAuthor: tengYong
+ *@Date: 2021-09-30 09:17:19
+*/
 @Slf4j
 @Component
 public class KafkaProducer {

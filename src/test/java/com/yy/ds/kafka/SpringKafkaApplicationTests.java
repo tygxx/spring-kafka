@@ -12,10 +12,16 @@ class SpringKafkaApplicationTests {
     @Autowired
     private KafkaProducer kafkaProducer;
 
-	@Test
-	void contextLoads() {
+    @Test
+    void sendMsgTest() {
         // kafkaProducer.sendMessageGeneral("test", "11");
-        kafkaProducer.sendMessageCallback("test2", "22");
-	}
+        kafkaProducer.sendMessageCallback("test", "2");
+    }
+
+    @Test
+    void sendMsgTest2() {
+        // kafkaProducer.sendMessageGeneral("test", "11");
+        kafkaProducer.sendMessageCallback("test2", "2");
+    }
 
 }
