@@ -68,7 +68,7 @@ scanPeriod:设置监测配置文件是否有修改的时间间隔，如果没有
     <logger name="org.slf4j" level="INFO" />
     <logger name="springfox" level="INFO" />
     <logger name="org.springframework" level="INFO" />
-    <logger name="org.apache.kafka" level="INFO" />
+    <!-- <logger name="org.apache.kafka" level="INFO" /> -->
 
     <!-- 常用日志级别：tarce、debug、info、warn、error -->
     <root level="DEBUG">
